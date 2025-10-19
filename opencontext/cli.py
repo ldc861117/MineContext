@@ -137,14 +137,37 @@ def start_web_server(
     global _config_path
     _config_path = config_path
 
-    if workers > 1:
-        logger.info(f"Starting with {workers} worker processes")
-        # For multi-process mode, use import string to avoid the warning
-        uvicorn.run("opencontext.cli:app", host=host, port=port, log_level="info", workers=workers)
-    else:
-        # For single process mode, use the existing instance
-        app.state.context_lab_instance = context_lab_instance
-        uvicorn.run(app, host=host, port=port, log_level="info")
+    def _run(host: str, port: int) -> None:
+        if workers > 1:
+            logger.info(f"Starting with {workers} worker processes")
+            uvicorn.run(
+                "opencontext.cli:app", host=host, port=port, log_level="info", workers=workers
+            )
+        else:
+            # For single process mode, use the existing instance
+            app.state.context_lab_instance = context_lab_instance
+            uvicorn.run(app, host=host, port=port, log_level="info")
+
+    # Try the requested port first; if it's in use, auto-increment to find a free one
+    max_attempts = 20
+    attempt = 0
+    current_port = port
+    while attempt < max_attempts:
+        try:
+            if current_port != port:
+                logger.warning(
+                    f"Port {port} is in use. Falling back to available port {current_port}."
+                )
+            _run(host, current_port)
+            break  # server exited normally
+        except OSError as e:
+            # EADDRINUSE on macOS is Errno 48; on Linux it's Errno 98
+            if getattr(e, "errno", None) in (48, 98):
+                attempt += 1
+                current_port += 1
+                continue
+            # Re-raise for other OS errors
+            raise
 
 
 def parse_args() -> argparse.Namespace:
