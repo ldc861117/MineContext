@@ -25,6 +25,12 @@ logger = get_logger(__name__)
 router = APIRouter(tags=["debug"])
 
 
+@router.get("/api/debug/raise_error")
+async def raise_error():
+    """Endpoint that intentionally raises an exception (for testing error handling)."""
+    raise RuntimeError("Intentional test error")
+
+
 @router.get("/api/debug/reports")
 async def get_debug_reports(
     limit: int = Query(10, ge=1, le=100),
