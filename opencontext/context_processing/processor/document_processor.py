@@ -233,7 +233,8 @@ class DocumentProcessor(BaseContextProcessor):
                 time1 = time.time()
                 processed_contexts = self._process_single_document(raw_context)
                 if processed_contexts:
-                    self.storage.batch_upsert_processed_context(processed_contexts)
+                    # Hand off to pipeline/storage via callback
+                    self._invoke_callback(processed_contexts)
                 time2 = time.time()
                 logger.info(
                     f"Processing document {raw_context.object_id} took: {time2 - time1:.2f} seconds"

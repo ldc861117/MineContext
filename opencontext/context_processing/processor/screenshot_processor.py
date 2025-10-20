@@ -319,7 +319,8 @@ class ScreenshotProcessor(BaseContextProcessor):
         logger.debug(
             f"Written {len(newly_processed_contexts)} contexts, removed {len(removed_context_ids)} contexts"
         )
-        self.storage.batch_upsert_processed_context(newly_processed_contexts)
+        # Hand off to pipeline/storage via callback
+        self._invoke_callback(newly_processed_contexts)
         # self.storage.delete(removed_context_ids)
 
         # Record successful processing metrics
