@@ -57,6 +57,31 @@ PROCESSOR_QUEUE_SIZE = Gauge(
     labelnames=("processor",),
 )
 
+# New pipeline queue metrics
+PIPELINE_QUEUE_SIZE = Gauge(
+    "pipeline_queue_size",
+    "Size of pipeline asyncio queues",
+    labelnames=("stage",),
+)
+
+PIPELINE_DROPPED_TOTAL = Counter(
+    "pipeline_dropped_total",
+    "Total number of dropped items by pipeline stage",
+    labelnames=("stage", "reason", "source"),
+)
+
+PIPELINE_RETRIES_TOTAL = Counter(
+    "pipeline_retries_total",
+    "Total number of enqueue retries by pipeline stage",
+    labelnames=("stage",),
+)
+
+PIPELINE_ENQUEUED_TOTAL = Counter(
+    "pipeline_enqueued_total",
+    "Total number of items successfully enqueued by pipeline stage",
+    labelnames=("stage",),
+)
+
 
 def render_latest_metrics() -> tuple[bytes, str]:
     registry = get_prometheus_registry()

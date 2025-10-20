@@ -25,6 +25,12 @@ async def prometheus_metrics(request: Request, _auth: str = auth_dependency):
                 qsize = getattr(proc, "_input_queue", None)
                 size = qsize.qsize() if qsize is not None else 0
                 PROCESSOR_QUEUE_SIZE.labels(processor=name).set(size)
+        # Pipeline queue sizes
+        if ctx and getattr(ctx, "pipeline", None):
+            try:
+                ctx.pipeline.report_metrics()
+            except Exception:
+                pass
     except Exception:
         pass
 

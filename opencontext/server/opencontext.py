@@ -22,7 +22,7 @@ from opencontext.managers.processor_manager import ContextProcessorManager
 from opencontext.models.context import ProcessedContext, RawContextProperties
 from opencontext.server.component_initializer import ComponentInitializer
 from opencontext.server.context_operations import ContextOperations
-from opencontext.storage.global_storage import GlobalStorage
+from opencontext.storage.global_storage import GlobalStorage, get_storage
 from opencontext.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -51,6 +51,9 @@ class OpenContext:
         self.component_initializer = ComponentInitializer()
         self.context_operations: Optional[ContextOperations] = None
 
+        # Pipeline supervisor (async queues)
+        self.pipeline = None
+
         # Web server state
         self.web_server: Optional[threading.Thread] = None
         self.web_server_running: bool = False
@@ -67,11 +70,26 @@ class OpenContext:
             GlobalStorage.get_instance()
             GlobalVLMClient.get_instance()
             self.context_operations = ContextOperations()
-            self.capture_manager.set_callback(self._handle_captured_context)
+
+            # Initialize async pipeline supervisor with config
+            from opencontext.pipeline.async_pipeline import AsyncPipelineSupervisor
+
+            pipeline_cfg = GlobalConfig.get_instance().get_config("pipeline") or {}
+            self.pipeline = AsyncPipelineSupervisor(
+                processor_manager=self.processor_manager,
+                storage=get_storage(),
+                config=pipeline_cfg,
+            )
+            self.pipeline.start()
+
+            # Wire callbacks through pipeline
+            self.capture_manager.set_callback(self.pipeline.enqueue_captured)
             self.component_initializer.initialize_capture_components(self.capture_manager)
             logger.info("Capture modules initialization completed")
+
+            # Processors will emit results to pipeline, which handles storage
             self.component_initializer.initialize_processors(
-                self.processor_manager, self._handle_processed_context
+                self.processor_manager, self.pipeline.handle_processed
             )
             self.consumption_manager = (
                 self.component_initializer.initialize_consumption_components()
@@ -165,6 +183,13 @@ class OpenContext:
             # Shutdown managers
             self.capture_manager.shutdown(graceful=graceful)
             self.processor_manager.shutdown(graceful=graceful)
+
+            # Stop pipeline last to allow draining processed items
+            if self.pipeline:
+                try:
+                    self.pipeline.stop(graceful=graceful)
+                except Exception as e:
+                    logger.warning(f"Error stopping pipeline: {e}")
 
             if self.web_server and self.web_server.is_alive():
                 logger.info("Web server will close when main thread exits.")
