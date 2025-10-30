@@ -58,7 +58,8 @@ check_python_deps() {
     
     # Critical dependencies to check (import names, NOT package names!)
     # Note: pyyaml package is imported as 'yaml', not 'pyyaml'
-    local deps=("opencontext" "sqlalchemy" "fastapi" "yaml" "chromadb" "openai")
+    # Note: python-multipart package is imported as 'multipart'
+    local deps=("opencontext" "sqlalchemy" "fastapi" "yaml" "chromadb" "openai" "multipart")
     local missing_deps=()
     
     for dep in "${deps[@]}"; do
