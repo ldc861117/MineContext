@@ -42,12 +42,51 @@ if [ -d ".venv" ]; then
     echo -e "${GREEN}✓${NC} Virtual environment activated"
 else
     echo -e "${YELLOW}⚠️  No .venv found, using system Python${NC}"
+    echo "   Consider creating a virtual environment:"
+    echo "   python3 -m venv .venv && source .venv/bin/activate"
 fi
 
-# Check Python dependencies
-if ! python3 -c "import opencontext" 2>/dev/null; then
-    echo -e "${RED}✗${NC} opencontext module not found. Installing dependencies..."
-    pip install -e .
+# Function to check Python dependencies
+check_python_deps() {
+    echo "🔍 Checking Python dependencies..."
+    
+    # Critical dependencies to check
+    local deps=("opencontext" "sqlalchemy" "fastapi" "pyyaml" "chromadb" "openai")
+    local missing_deps=()
+    
+    for dep in "${deps[@]}"; do
+        if ! python3 -c "import ${dep}" 2>/dev/null; then
+            missing_deps+=("${dep}")
+        fi
+    done
+    
+    if [ ${#missing_deps[@]} -gt 0 ]; then
+        echo -e "${YELLOW}⚠️  Missing Python dependencies: ${missing_deps[*]}${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}✓${NC} All critical Python dependencies found"
+    return 0
+}
+
+# Check and install Python dependencies
+if ! check_python_deps; then
+    echo "📦 Installing Python dependencies..."
+    echo "   This may take a few minutes..."
+    
+    if pip install -e . ; then
+        echo -e "${GREEN}✓${NC} Python dependencies installed successfully"
+        
+        # Verify installation
+        if ! check_python_deps; then
+            echo -e "${RED}✗${NC} Dependency installation failed. Please check errors above."
+            exit 1
+        fi
+    else
+        echo -e "${RED}✗${NC} Failed to install Python dependencies"
+        echo "   Try manually: pip install -e ."
+        exit 1
+    fi
 fi
 
 # Start backend and save its PID
@@ -78,11 +117,58 @@ cleanup() {
 # Trap Ctrl+C and call cleanup
 trap cleanup INT TERM
 
-# Check if frontend dependencies are installed
-if [ ! -d "frontend/node_modules" ]; then
-    echo "📦 Installing frontend dependencies..."
-    cd frontend && pnpm install
+# Function to check frontend dependencies
+check_frontend_deps() {
+    echo "🔍 Checking frontend dependencies..."
+    
+    if [ ! -d "frontend/node_modules" ]; then
+        echo -e "${YELLOW}⚠️  node_modules directory not found${NC}"
+        return 1
+    fi
+    
+    # Check for critical packages
+    local critical_packages=("electron" "vite" "react" "pidusage")
+    local missing_packages=()
+    
+    cd frontend
+    for package in "${critical_packages[@]}"; do
+        if [ ! -d "node_modules/${package}" ]; then
+            missing_packages+=("${package}")
+        fi
+    done
     cd ..
+    
+    if [ ${#missing_packages[@]} -gt 0 ]; then
+        echo -e "${YELLOW}⚠️  Missing frontend packages: ${missing_packages[*]}${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}✓${NC} All critical frontend dependencies found"
+    return 0
+}
+
+# Check and install frontend dependencies
+if ! check_frontend_deps; then
+    echo "📦 Installing frontend dependencies..."
+    echo "   This may take a few minutes..."
+    
+    cd frontend
+    if pnpm install; then
+        cd ..
+        echo -e "${GREEN}✓${NC} Frontend dependencies installed successfully"
+        
+        # Verify installation
+        if ! check_frontend_deps; then
+            echo -e "${RED}✗${NC} Frontend dependency installation incomplete"
+            echo "   Try manually: cd frontend && pnpm install"
+            exit 1
+        fi
+    else
+        cd ..
+        echo -e "${RED}✗${NC} Failed to install frontend dependencies"
+        echo "   Try manually: cd frontend && pnpm install"
+        exit 1
+    fi
 fi
 
 # Start frontend in the foreground
