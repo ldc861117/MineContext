@@ -12,10 +12,13 @@ Configuration manager, responsible for loading and managing system configuration
 import logging
 import os
 import re
-from typing import Any, Dict, Optional
+import shutil
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
+from opencontext.config.config_validator import ConfigValidator
 from opencontext.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -250,3 +253,73 @@ class ConfigManager:
         except Exception as e:
             logger.error(f"Failed to reset user settings: {e}")
             return False
+
+    def validate_config(self) -> Tuple[bool, List[str]]:
+        """
+        Validate the current configuration
+
+        Returns:
+            (is_valid, error_messages)
+        """
+        if not self._config:
+            return False, ["Configuration not loaded"]
+
+        validator = ConfigValidator()
+        return validator.validate(self._config)
+
+    def backup_config(self, config_path: Optional[str] = None) -> bool:
+        """
+        Create a backup of the configuration file
+
+        Args:
+            config_path: Path to config file to backup. If None, uses current config.
+
+        Returns:
+            bool: True if successful
+        """
+        if config_path is None:
+            config_path = self._config_path
+
+        if not config_path or not os.path.exists(config_path):
+            logger.warning(f"Cannot backup config, file not found: {config_path}")
+            return False
+
+        try:
+            # Create backup directory
+            backup_dir = os.path.join(os.path.dirname(config_path), "backups")
+            os.makedirs(backup_dir, exist_ok=True)
+
+            # Generate backup filename with timestamp
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            config_name = os.path.basename(config_path)
+            backup_path = os.path.join(backup_dir, f"{config_name}.backup.{timestamp}")
+
+            # Copy file
+            shutil.copy2(config_path, backup_path)
+            logger.info(f"Configuration backed up to: {backup_path}")
+
+            # Clean up old backups (keep last 10)
+            self._cleanup_old_backups(backup_dir, config_name, keep=10)
+
+            return True
+        except Exception as e:
+            logger.error(f"Failed to backup configuration: {e}")
+            return False
+
+    def _cleanup_old_backups(self, backup_dir: str, config_name: str, keep: int = 10):
+        """Clean up old backup files, keeping only the most recent ones"""
+        try:
+            backup_files = [
+                f
+                for f in os.listdir(backup_dir)
+                if f.startswith(config_name) and f.endswith(".backup.*")
+            ]
+            backup_files.sort(reverse=True)
+
+            # Remove old backups beyond the keep limit
+            for old_backup in backup_files[keep:]:
+                old_path = os.path.join(backup_dir, old_backup)
+                os.remove(old_path)
+                logger.debug(f"Removed old backup: {old_path}")
+        except Exception as e:
+            logger.warning(f"Failed to cleanup old backups: {e}")
