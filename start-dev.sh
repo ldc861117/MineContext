@@ -56,8 +56,9 @@ check_python_deps() {
         PYTHON_CMD="python3"
     fi
     
-    # Critical dependencies to check
-    local deps=("opencontext" "sqlalchemy" "fastapi" "pyyaml" "chromadb" "openai")
+    # Critical dependencies to check (import names, NOT package names!)
+    # Note: pyyaml package is imported as 'yaml', not 'pyyaml'
+    local deps=("opencontext" "sqlalchemy" "fastapi" "yaml" "chromadb" "openai")
     local missing_deps=()
     
     for dep in "${deps[@]}"; do
