@@ -133,9 +133,12 @@ const Settings: FC<Props> = (props: Props) => {
   const getInfo = async () => {
     const res = await getModelInfo()
 
-    // Check if model is configured based on modelId, not apiKey
+    // Check if both VLM and Embedding models are configured
     // API key can be empty for local providers like Ollama, LocalAI, etc.
-    if (!res.data.config.modelId || res.data.config.modelId === '') {
+    const hasVLM = res.data.config.modelId && res.data.config.modelId !== ''
+    const hasEmbedding = res.data.config.embeddingModelId && res.data.config.embeddingModelId !== ''
+    
+    if (!hasVLM || !hasEmbedding) {
       setInit(false)
     } else {
       form.setFieldsValue(res.data.config)
