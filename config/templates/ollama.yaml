@@ -1,0 +1,70 @@
+# Copyright (c) 2025 Beijing Volcano Engine Technology Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+#
+# MineContext Configuration Template: Ollama (Local, No API Key Required)
+# 
+# This template is configured for using Ollama locally for both VLM and embedding.
+# Copy this file to config/user/config.yaml and adjust parameters as needed.
+#
+# Prerequisites:
+#   - Ollama installed and running (ollama serve)
+#   - Required models pulled:
+#     * VLM: ollama pull qwen2.5:14b (or your preferred model)
+#     * Embedding: ollama pull nomic-embed-text (or your preferred embedding model)
+
+# ============================================
+# Vision Language Model (VLM) Configuration
+# ============================================
+vlm_model:
+  provider: "ollama"
+  model: "qwen2.5:14b"  # Change to your preferred model
+  base_url: "http://localhost:11434/v1"
+  api_key: ""  # Ollama doesn't require API key
+  temperature: 0.7
+  max_tokens: 4096
+
+# ============================================
+# Embedding Model Configuration
+# CRITICAL: dimensions must match your embedding model!
+# ============================================
+embedding_model:
+  provider: "ollama"
+  model: "nomic-embed-text"  # Change to your preferred embedding model
+  base_url: "http://localhost:11434/v1"
+  api_key: ""  # Ollama doesn't require API key
+  dimensions: 768  # MUST match nomic-embed-text: 768
+  output_dim: 768
+
+# ============================================
+# Context Capture (Optional)
+# ============================================
+capture:
+  screenshot:
+    enabled: false  # Disable by default
+  file_monitor:
+    enabled: false
+
+# ============================================
+# Preferences
+# ============================================
+preferences:
+  language: "zh"  # or "en"
+  theme: "light"  # or "dark"
+
+# ============================================
+# Common Ollama Models and Their Dimensions
+# ============================================
+#
+# Vision Language Models (VLM):
+#   - qwen2.5:14b (recommended for balanced performance)
+#   - qwen:32b (better quality, slower)
+#   - llama3.1:latest (good alternative)
+#   - mistral:latest (fast, good for quick inference)
+#   - gemma2:latest (good alternative)
+#
+# Embedding Models:
+#   - nomic-embed-text: dimensions=768 (recommended, balanced)
+#   - mxbai-embed-large: dimensions=1024 (better quality)
+#   - bge-m3: dimensions=1024 (good multilingual support)
+#   - all-minilm: dimensions=384 (smaller, faster)
+#   - nomic-embed-text-v1.5: dimensions=768
