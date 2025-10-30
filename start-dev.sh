@@ -50,12 +50,18 @@ fi
 check_python_deps() {
     echo "🔍 Checking Python dependencies..."
     
+    # Use the correct Python command (python in venv, python3 otherwise)
+    local PYTHON_CMD="python"
+    if [ -z "$VIRTUAL_ENV" ]; then
+        PYTHON_CMD="python3"
+    fi
+    
     # Critical dependencies to check
     local deps=("opencontext" "sqlalchemy" "fastapi" "pyyaml" "chromadb" "openai")
     local missing_deps=()
     
     for dep in "${deps[@]}"; do
-        if ! python3 -c "import ${dep}" 2>/dev/null; then
+        if ! $PYTHON_CMD -c "import ${dep}" 2>/dev/null; then
             missing_deps+=("${dep}")
         fi
     done
@@ -91,7 +97,12 @@ fi
 
 # Start backend and save its PID
 echo "🔧 Starting backend service..."
-python3 -m opencontext.cli start &
+# Use python in venv, python3 otherwise
+if [ -n "$VIRTUAL_ENV" ]; then
+    python -m opencontext.cli start &
+else
+    python3 -m opencontext.cli start &
+fi
 BACKEND_PID=$!
 
 # Wait a bit to check if backend started successfully
