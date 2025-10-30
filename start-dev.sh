@@ -83,9 +83,23 @@ if ! check_python_deps; then
     if pip install -e . ; then
         echo -e "${GREEN}✓${NC} Python dependencies installed successfully"
         
+        # Wait a moment for installation to settle
+        sleep 1
+        
         # Verify installation
         if ! check_python_deps; then
             echo -e "${RED}✗${NC} Dependency installation failed. Please check errors above."
+            echo ""
+            echo -e "${YELLOW}Troubleshooting:${NC}"
+            echo "Your .venv appears to have permission issues."
+            echo "pip installed packages to user directory instead of venv."
+            echo ""
+            echo "Recommended fix:"
+            echo "  1. rm -rf .venv"
+            echo "  2. python3 -m venv .venv"
+            echo "  3. source .venv/bin/activate"
+            echo "  4. pip install -e ."
+            echo "  5. ./start-dev.sh"
             exit 1
         fi
     else
