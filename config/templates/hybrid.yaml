@@ -1,0 +1,84 @@
+# Copyright (c) 2025 Beijing Volcano Engine Technology Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+#
+# MineContext Configuration Template: Hybrid (Optimal Combination)
+# 
+# This template combines the best of both worlds:
+# - OpenAI GPT-4 for high-quality vision language understanding
+# - Ollama local embedding for privacy and speed
+#
+# This is a cost-effective and performant setup for production use.
+#
+# Prerequisites:
+#   - OpenAI API key (for VLM)
+#   - Ollama installed locally (for embedding)
+#   - Set environment variable: LLM_API_KEY=sk-... in .env file
+#
+# Setup Steps:
+#   1. cp config/templates/hybrid.yaml config/user/config.yaml
+#   2. echo "LLM_API_KEY=sk-your-openai-api-key" > .env
+#   3. ollama serve (in one terminal)
+#   4. ollama pull nomic-embed-text (in another terminal)
+#   5. python -m opencontext
+
+# ============================================
+# Vision Language Model (VLM) - OpenAI
+# ============================================
+vlm_model:
+  provider: "openai"
+  model: "gpt-4o"  # High quality, reasonable cost
+  base_url: "https://api.openai.com/v1"
+  api_key: "${LLM_API_KEY}"  # From environment variable
+  temperature: 0.7
+  max_tokens: 4096
+
+# ============================================
+# Embedding Model - Local Ollama (Free)
+# CRITICAL: dimensions must match your embedding model!
+# ============================================
+embedding_model:
+  provider: "ollama"
+  model: "nomic-embed-text"  # Free, local, fast
+  base_url: "http://localhost:11434/v1"
+  api_key: ""  # Ollama doesn't require API key
+  
+  # Nomic-embed-text dimensions
+  dimensions: 768  # MUST match nomic-embed-text: 768
+  output_dim: 768
+
+# ============================================
+# Context Capture (Optional)
+# ============================================
+capture:
+  screenshot:
+    enabled: false  # Disable by default
+  file_monitor:
+    enabled: false
+
+# ============================================
+# Preferences
+# ============================================
+preferences:
+  language: "zh"  # or "en"
+  theme: "light"  # or "dark"
+
+# ============================================
+# Why This Hybrid Approach?
+# ============================================
+#
+# 👍 Advantages:
+#   - VLM: OpenAI GPT-4 gives best quality for complex visual understanding
+#   - Embedding: Ollama is free, local, and fast
+#   - Cost: Lower than using OpenAI for both
+#   - Privacy: Embeddings stay local, never sent to external API
+#   - Performance: Balanced between quality and speed
+#
+# 💡 Perfect For:
+#   - Production deployments needing high quality
+#   - Organizations with privacy concerns
+#   - Budget-conscious teams
+#
+# 📊 Comparison:
+#   - All Local (Ollama):      Cheapest, but lower quality
+#   - All Cloud (OpenAI):      Best quality, but higher cost
+#   - Hybrid (This config):    Best balance ⭐

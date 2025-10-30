@@ -1,0 +1,198 @@
+# Copyright (c) 2025 Beijing Volcano Engine Technology Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+#
+# MineContext Configuration Template: Production Deployment
+# 
+# This template is optimized for production deployments with:
+# - Enhanced monitoring and logging
+# - Performance tuning
+# - Security hardening
+# - Reliable error handling
+#
+# This uses hybrid setup (OpenAI + Ollama) for best balance
+#
+# Prerequisites:
+#   - Proper environment setup with all required services
+#   - Configuration management system in place
+#   - Set environment variables in .env file
+#
+# Setup Steps:
+#   1. cp config/templates/production.yaml config/user/config.yaml
+#   2. Configure .env with production secrets
+#   3. Verify all services are running
+#   4. python -m opencontext
+
+# ============================================
+# Global Settings
+# ============================================
+enabled: true
+context_path: "/data/minecontext"  # Production data path
+
+# ============================================
+# Logging Configuration (Production)
+# ============================================
+logging:
+  level: "INFO"  # More restrictive in production
+  log_path: "/var/log/minecontext/opencontext.log"
+  format: "json"  # Machine-readable JSON logs
+  max_bytes: 104857600  # 100MB log rotation
+  backup_count: 10
+
+# ============================================
+# Web Server Configuration (Production)
+# ============================================
+web:
+  host: "0.0.0.0"  # Listen on all interfaces (behind reverse proxy)
+  port: 1733
+  debug: false  # NEVER debug in production
+  cors_origins:
+    - "https://yourdomain.com"  # Set your actual domain
+  workers: 4  # Multiple workers for concurrency
+  timeout: 120  # Connection timeout
+
+# ============================================
+# Vision Language Model (VLM) - OpenAI
+# ============================================
+vlm_model:
+  provider: "openai"
+  model: "gpt-4o"
+  base_url: "https://api.openai.com/v1"
+  api_key: "${LLM_API_KEY}"
+  temperature: 0.7
+  max_tokens: 4096
+
+# ============================================
+# Embedding Model - Ollama
+# CRITICAL: dimensions must match your embedding model!
+# ============================================
+embedding_model:
+  provider: "ollama"
+  model: "nomic-embed-text"
+  base_url: "http://localhost:11434/v1"
+  api_key: ""
+  dimensions: 768
+  output_dim: 768
+
+# ============================================
+# Database Configuration (Production)
+# ============================================
+database:
+  engine: "sqlite"  # Or PostgreSQL for larger deployments
+  path: "/data/minecontext/opencontext.db"
+  backup_path: "/data/minecontext/backups"
+  backup_interval: 3600  # Hourly backups
+
+# ============================================
+# Storage Configuration (Production)
+# ============================================
+storage:
+  backend: "chromadb"
+  base_path: "/data/minecontext/storage"
+  persist: true
+  backup_enabled: true
+
+# ============================================
+# Performance Tuning (Production)
+# ============================================
+performance:
+  max_workers: 8  # More workers for production
+  timeout: 300
+  retry_attempts: 5  # More resilient
+  retry_delay: 2
+  connection_pool_size: 20
+  cache_enabled: true
+  cache_ttl: 3600
+
+# ============================================
+# Monitoring and Health Checks (Production)
+# ============================================
+monitoring:
+  enabled: true
+  health_check_interval: 60
+  metrics_enabled: true
+  metrics_port: 9090
+  alert_enabled: true
+  alert_threshold: 0.8  # Alert at 80% resource usage
+
+# ============================================
+# Security Configuration (Production)
+# ============================================
+security:
+  enable_api_key_auth: true
+  api_key: "${API_KEY}"  # MUST be set from environment
+  allowed_origins:
+    - "https://yourdomain.com"
+  rate_limit_enabled: true
+  rate_limit_requests: 1000
+  rate_limit_window: 60  # per minute
+  https_only: true
+  ssl_cert: "/etc/ssl/certs/yourdomain.crt"
+  ssl_key: "/etc/ssl/private/yourdomain.key"
+
+# ============================================
+# Context Capture (Controlled in Production)
+# ============================================
+capture:
+  screenshot:
+    enabled: false  # Disabled in production
+  file_monitor:
+    enabled: false
+  vault_document_monitor:
+    enabled: true
+    monitor_interval: 300  # Less frequent
+
+# ============================================
+# Context Processing (Optimized for Production)
+# ============================================
+processing:
+  enabled: true
+  document_processor:
+    enabled: true
+    batch_size: 10  # Larger batches for efficiency
+    batch_timeout: 60
+  screenshot_processor:
+    enabled: true
+    batch_size: 20
+
+# ============================================
+# Preferences
+# ============================================
+preferences:
+  language: "zh"
+  theme: "light"
+
+# ============================================
+# Production Checklist
+# ============================================
+#
+# Before deploying to production:
+#
+# ✅ Security:
+#   - Set strong API_KEY environment variable
+#   - Configure HTTPS/SSL certificates
+#   - Set proper CORS origins
+#   - Enable API key authentication
+#
+# ✅ Infrastructure:
+#   - Set up reverse proxy (nginx/haproxy)
+#   - Configure log rotation
+#   - Set up monitoring (Prometheus, ELK, etc.)
+#   - Set up automated backups
+#
+# ✅ Services:
+#   - Ensure Ollama is running and accessible
+#   - Verify OpenAI API connectivity
+#   - Test database backups
+#   - Verify logging system
+#
+# ✅ Performance:
+#   - Load test the deployment
+#   - Monitor resource usage
+#   - Set up alerts for critical issues
+#   - Establish performance baselines
+#
+# ✅ Monitoring:
+#   - Set up health check probes
+#   - Configure metrics collection
+#   - Set up error tracking (Sentry, etc.)
+#   - Establish runbooks for common issues

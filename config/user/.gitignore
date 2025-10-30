@@ -1,0 +1,24 @@
+# User Configuration Files (Git Ignored)
+# These files are created and managed by users and should not be committed to git
+
+# User configuration files
+config.yaml
+settings.yaml
+prompts/
+
+# Backup files
+backups/
+*.backup.*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# All other files in this directory are ignored by default
+# Only .gitignore itself is tracked

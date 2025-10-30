@@ -1,0 +1,75 @@
+# Copyright (c) 2025 Beijing Volcano Engine Technology Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+#
+# MineContext Configuration Template: OpenAI
+# 
+# This template is configured for using OpenAI's cloud-based models.
+# Copy this file to config/user/config.yaml and set API key in .env file.
+#
+# Prerequisites:
+#   - OpenAI API key (get from: https://platform.openai.com/api-keys)
+#   - Set environment variable: LLM_API_KEY=sk-... in .env file
+#
+# Setup Steps:
+#   1. cp config/templates/openai.yaml config/user/config.yaml
+#   2. echo "LLM_API_KEY=sk-your-api-key-here" > .env
+#   3. python -m opencontext
+
+# ============================================
+# Vision Language Model (VLM) Configuration
+# ============================================
+vlm_model:
+  provider: "openai"
+  model: "gpt-4o"  # or "gpt-4-turbo", "gpt-3.5-turbo"
+  base_url: "https://api.openai.com/v1"
+  api_key: "${LLM_API_KEY}"  # From environment variable
+  temperature: 0.7
+  max_tokens: 4096
+
+# ============================================
+# Embedding Model Configuration
+# CRITICAL: dimensions must match your embedding model!
+# ============================================
+embedding_model:
+  provider: "openai"
+  model: "text-embedding-3-large"  # or "text-embedding-3-small"
+  base_url: "https://api.openai.com/v1"
+  api_key: "${LLM_API_KEY}"  # From environment variable
+  
+  # OpenAI embedding dimensions:
+  # - text-embedding-3-small: 1536
+  # - text-embedding-3-large: 3072
+  dimensions: 3072  # MUST match text-embedding-3-large
+  output_dim: 3072
+
+# ============================================
+# Context Capture (Optional)
+# ============================================
+capture:
+  screenshot:
+    enabled: false  # Disable by default
+  file_monitor:
+    enabled: false
+
+# ============================================
+# Preferences
+# ============================================
+preferences:
+  language: "zh"  # or "en"
+  theme: "light"  # or "dark"
+
+# ============================================
+# OpenAI Model Information
+# ============================================
+#
+# Vision Language Models (VLM):
+#   - gpt-4o (recommended, latest and fastest)
+#   - gpt-4-turbo (good quality, higher cost)
+#   - gpt-3.5-turbo (fast, lower cost)
+#
+# Embedding Models and Dimensions:
+#   - text-embedding-3-small: dimensions=1536
+#   - text-embedding-3-large: dimensions=3072 (better quality)
+#
+# Note: Costs may apply for API usage
+# See https://openai.com/pricing for latest pricing
