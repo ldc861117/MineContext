@@ -94,11 +94,14 @@ function AppContent(): React.ReactElement {
   })
 
   useEffect(() => {
-    window.serverPushAPI.getInitCheckData((data) => {
-      const temp = JSON.parse(data)
-
-      setShowSettings(!temp.data.components.llm)
-    })
+    // HARDCODED: Skip LLM health check and go directly to main app
+    // Original logic: setShowSettings(!temp.data.components.llm)
+    setShowSettings(false)
+    
+    // window.serverPushAPI.getInitCheckData((data) => {
+    //   const temp = JSON.parse(data)
+    //   setShowSettings(!temp.data.components.llm)
+    // })
   }, [])
 
   // Decide whether to display the application based on the status
