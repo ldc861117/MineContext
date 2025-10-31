@@ -277,7 +277,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="OpenContext Server")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
-    parser.add_argument("--port", type=int, default=1733,
+    parser.add_argument("--port", type=int, default=8008,
                         help="Port to bind to")
     parser.add_argument(
         "--config", help="Configuration file path", default="./config/config.yaml")
