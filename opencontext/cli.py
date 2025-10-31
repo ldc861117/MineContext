@@ -60,7 +60,7 @@ def get_or_create_context_lab():
 async def lifespan(app: FastAPI):
     """Lifespan context manager for FastAPI."""
     # Startup
-    if not hasattr(app.state, "context_lab_instance"):
+    if not hasattr(app, "state") or not hasattr(app.state, "context_lab_instance"):
         app.state.context_lab_instance = get_or_create_context_lab()
     yield
     # Shutdown - cleanup if needed
@@ -80,6 +80,11 @@ app.add_middleware(
 
 # Request metrics middleware
 from opencontext.server.middleware.metrics import RequestMetricsMiddleware
+from opencontext.server.middleware.correlation import CorrelationIdMiddleware
+from opencontext.server.exception_handlers import register_exception_handlers
+
+# Correlation ids must be early so subsequent middleware/handlers see them
+app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(RequestMetricsMiddleware)
 
 # Project root
@@ -120,7 +125,11 @@ def _setup_static_files() -> None:
 
 _setup_static_files()
 
+# Register API routers
 app.include_router(api_router)
+
+# Register global exception handlers
+register_exception_handlers(app)
 
 
 def start_web_server(
@@ -171,6 +180,11 @@ def parse_args() -> argparse.Namespace:
     start_parser.add_argument("--port", type=int, help="Port number (overrides config file)")
     start_parser.add_argument(
         "--workers", type=int, default=1, help="Number of worker processes (default: 1)"
+    )
+    start_parser.add_argument(
+        "--pretty-logs",
+        action="store_true",
+        help="Use human-friendly pretty console logs instead of JSON",
     )
 
     return parser.parse_args()
@@ -260,17 +274,22 @@ def handle_start(args: argparse.Namespace) -> int:
     return 0
 
 
-def _setup_logging(config_path: Optional[str]) -> None:
+def _setup_logging(config_path: Optional[str], pretty_logs: Optional[bool] = None) -> None:
     """Setup logging configuration.
 
     Args:
         config_path: Optional path to configuration file
+        pretty_logs: Optional override for pretty console logs
     """
     from opencontext.config.global_config import GlobalConfig
 
     GlobalConfig.get_instance().initialize(config_path)
+    cfg = GlobalConfig.get_instance().get_config("logging") or {}
+    if pretty_logs is not None:
+        cfg = dict(cfg)
+        cfg["pretty_console"] = bool(pretty_logs)
 
-    setup_logging(GlobalConfig.get_instance().get_config("logging"))
+    setup_logging(cfg)
 
 
 def main() -> int:
@@ -281,8 +300,8 @@ def main() -> int:
     """
     args = parse_args()
 
-    # Setup logging first
-    _setup_logging(getattr(args, "config", None))
+    # Setup logging first (support pretty console override)
+    _setup_logging(getattr(args, "config", None), getattr(args, "pretty_logs", None))
 
     logger.debug(f"Command line arguments: {args}")
 

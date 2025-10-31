@@ -24,6 +24,7 @@ from opencontext.server.component_initializer import ComponentInitializer
 from opencontext.server.context_operations import ContextOperations
 from opencontext.storage.global_storage import GlobalStorage
 from opencontext.utils.logging_utils import get_logger
+from opencontext.utils import trace_context
 
 logger = get_logger(__name__)
 
@@ -103,17 +104,22 @@ class OpenContext:
     def _handle_captured_context(self, contexts: List[RawContextProperties]) -> bool:
         """
         Handle batch processing and storage of captured context data.
+        Creates a new trace_id and propagates it through processing and storage.
         """
         if not contexts:
             return False
 
-        try:
-            for context_data in contexts:
-                self.processor_manager.process(context_data)
-            return True
-        except Exception as e:
-            logger.error(f"Error processing captured contexts: {e}")
-            return False
+        # Create a new trace for this capture batch
+        trace_id = trace_context.new_trace_id()
+        with trace_context.contextualize(trace_id=trace_id):
+            with logger.contextualize(trace_id=trace_id):
+                try:
+                    for context_data in contexts:
+                        self.processor_manager.process(context_data)
+                    return True
+                except Exception as e:
+                    logger.error(f"Error processing captured contexts: {e}")
+                    return False
 
     def _handle_processed_context(self, contexts: List[ProcessedContext]) -> bool:
         """
