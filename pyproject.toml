@@ -27,6 +27,7 @@ dependencies = [
     "pandas",
     "fastapi",
     "uvicorn",
+    "python-multipart",  # Required by FastAPI for form data handling
     "openai",
     "jinja2",
     "json-repair",

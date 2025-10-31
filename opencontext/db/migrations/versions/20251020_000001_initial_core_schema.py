@@ -27,7 +27,7 @@ def upgrade() -> None:
         sa.Column("content", sa.Text(), nullable=True),
         sa.Column("content_hash", sa.String(length=64), nullable=True),
         sa.Column("source", sa.String(length=128), nullable=True),
-        sa.Column("metadata", sa.Text(), nullable=True),  # JSON as TEXT for SQLite
+        sa.Column("meta_data", sa.Text(), nullable=True),  # JSON as TEXT for SQLite (renamed from metadata)
         sa.Column("created_at", sa.DateTime(), nullable=False, server_default=sa.text("CURRENT_TIMESTAMP")),
         sa.Column("updated_at", sa.DateTime(), nullable=False, server_default=sa.text("CURRENT_TIMESTAMP")),
     )
@@ -41,7 +41,7 @@ def upgrade() -> None:
         sa.Column("document_id", sa.Integer(), sa.ForeignKey("documents.id", ondelete="CASCADE"), nullable=False),
         sa.Column("chunk_index", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("metadata", sa.Text(), nullable=True),
+        sa.Column("meta_data", sa.Text(), nullable=True),  # Renamed from metadata
         sa.Column("created_at", sa.DateTime(), nullable=False, server_default=sa.text("CURRENT_TIMESTAMP")),
         sa.UniqueConstraint("document_id", "chunk_index", name="uq_chunk_doc_index"),
     )
@@ -70,7 +70,7 @@ def upgrade() -> None:
         sa.Column("value", sa.String(length=512), nullable=False),
         sa.Column("start_pos", sa.Integer(), nullable=True),
         sa.Column("end_pos", sa.Integer(), nullable=True),
-        sa.Column("metadata", sa.Text(), nullable=True),
+        sa.Column("meta_data", sa.Text(), nullable=True),  # Renamed from metadata
     )
     op.create_index("ix_entities_document_id", "entities", ["document_id"])
     op.create_index("ix_entities_type_value", "entities", ["type", "value"])

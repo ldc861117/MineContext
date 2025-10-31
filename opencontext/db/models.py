@@ -35,7 +35,8 @@ class Document(Base):
     content: Mapped[Optional[str]] = mapped_column(Text)
     content_hash: Mapped[Optional[str]] = mapped_column(String(64))
     source: Mapped[Optional[str]] = mapped_column(String(128))
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON().with_variant(Text, "sqlite"))
+    # Renamed from 'metadata' to avoid SQLAlchemy reserved attribute
+    meta_data: Mapped[Optional[dict]] = mapped_column(JSON().with_variant(Text, "sqlite"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
@@ -61,7 +62,8 @@ class Chunk(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     text: Mapped[str] = mapped_column(Text, nullable=False)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON().with_variant(Text, "sqlite"))
+    # Renamed from 'metadata' to avoid SQLAlchemy reserved attribute
+    meta_data: Mapped[Optional[dict]] = mapped_column(JSON().with_variant(Text, "sqlite"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     document: Mapped[Document] = relationship(back_populates="chunks")
@@ -104,7 +106,8 @@ class Entity(Base):
     value: Mapped[str] = mapped_column(String(512))
     start_pos: Mapped[Optional[int]] = mapped_column(Integer)
     end_pos: Mapped[Optional[int]] = mapped_column(Integer)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON().with_variant(Text, "sqlite"))
+    # Renamed from 'metadata' to avoid SQLAlchemy reserved attribute
+    meta_data: Mapped[Optional[dict]] = mapped_column(JSON().with_variant(Text, "sqlite"))
 
     document: Mapped[Document] = relationship(back_populates="entities")
 

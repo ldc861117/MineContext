@@ -50,12 +50,20 @@ fi
 check_python_deps() {
     echo "🔍 Checking Python dependencies..."
     
-    # Critical dependencies to check
-    local deps=("opencontext" "sqlalchemy" "fastapi" "pyyaml" "chromadb" "openai")
+    # Use the correct Python command (python in venv, python3 otherwise)
+    local PYTHON_CMD="python"
+    if [ -z "$VIRTUAL_ENV" ]; then
+        PYTHON_CMD="python3"
+    fi
+    
+    # Critical dependencies to check (import names, NOT package names!)
+    # Note: pyyaml package is imported as 'yaml', not 'pyyaml'
+    # Note: python-multipart package is imported as 'multipart'
+    local deps=("opencontext" "sqlalchemy" "fastapi" "yaml" "chromadb" "openai" "multipart")
     local missing_deps=()
     
     for dep in "${deps[@]}"; do
-        if ! python3 -c "import ${dep}" 2>/dev/null; then
+        if ! $PYTHON_CMD -c "import ${dep}" 2>/dev/null; then
             missing_deps+=("${dep}")
         fi
     done
@@ -77,9 +85,23 @@ if ! check_python_deps; then
     if pip install -e . ; then
         echo -e "${GREEN}✓${NC} Python dependencies installed successfully"
         
+        # Wait a moment for installation to settle
+        sleep 1
+        
         # Verify installation
         if ! check_python_deps; then
             echo -e "${RED}✗${NC} Dependency installation failed. Please check errors above."
+            echo ""
+            echo -e "${YELLOW}Troubleshooting:${NC}"
+            echo "Your .venv appears to have permission issues."
+            echo "pip installed packages to user directory instead of venv."
+            echo ""
+            echo "Recommended fix:"
+            echo "  1. rm -rf .venv"
+            echo "  2. python3 -m venv .venv"
+            echo "  3. source .venv/bin/activate"
+            echo "  4. pip install -e ."
+            echo "  5. ./start-dev.sh"
             exit 1
         fi
     else
@@ -91,7 +113,12 @@ fi
 
 # Start backend and save its PID
 echo "🔧 Starting backend service..."
-python3 -m opencontext.cli start &
+# Use python in venv, python3 otherwise
+if [ -n "$VIRTUAL_ENV" ]; then
+    python -m opencontext.cli start &
+else
+    python3 -m opencontext.cli start &
+fi
 BACKEND_PID=$!
 
 # Wait a bit to check if backend started successfully
