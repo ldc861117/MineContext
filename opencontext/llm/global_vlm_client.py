@@ -182,6 +182,11 @@ class GlobalVLMClient:
     async def generate_with_messages_async(
         self, messages: list, enable_executor: bool = True, max_calls: int = 5, **kwargs
     ):
+        if self._vlm_client is None:
+            raise RuntimeError(
+                "VLM client is not initialized. Please check your configuration and ensure "
+                "the VLM model is properly configured in config.yaml"
+            )
         response = await self._vlm_client.generate_with_messages_async(messages, **kwargs)
         call_count = 0
         while enable_executor:
