@@ -245,7 +245,7 @@ def handle_start(args: argparse.Namespace) -> int:
 
         # Command line arguments override env/config
         host = args.host or env_host or web_config.get("host", "localhost")
-        port = args.port or (int(env_port) if env_port and env_port.isdigit() else None) or web_config.get("port", 8000)
+        port = args.port or (int(env_port) if env_port and env_port.isdigit() else None) or web_config.get("port", 1733)
 
         try:
             logger.info(f"Starting web server on {host}:{port}")

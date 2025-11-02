@@ -4,9 +4,9 @@
 import axios from 'axios'
 
 // TODO: Finally, use the main process proxy so that the baseURL does not need to be updated every time
-// Resolve default backend URL from env (fallback to 127.0.0.1:8008)
+// Resolve default backend URL from env (fallback to 127.0.0.1:1733)
 const DEFAULT_HOST = (import.meta.env?.VITE_WEB_HOST as string) || '127.0.0.1'
-const DEFAULT_PORT = Number(import.meta.env?.VITE_WEB_PORT ?? 8008)
+const DEFAULT_PORT = Number(import.meta.env?.VITE_WEB_PORT ?? 1733)
 const DEFAULT_BASE_URL = `http://${DEFAULT_HOST}:${DEFAULT_PORT}`
 
 // Create an axios instance, initially using the env/default port
