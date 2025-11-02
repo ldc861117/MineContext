@@ -84,7 +84,7 @@ export default defineConfig({
     // Map WEB_HOST/WEB_PORT from process.env into Vite runtime vars
     define: {
       'import.meta.env.VITE_WEB_HOST': JSON.stringify(process.env.WEB_HOST || '127.0.0.1'),
-      'import.meta.env.VITE_WEB_PORT': JSON.stringify(process.env.WEB_PORT || '8000')
+      'import.meta.env.VITE_WEB_PORT': JSON.stringify(process.env.WEB_PORT || '1733')
     }
     // server: {
     //   proxy: {

@@ -21,7 +21,7 @@ How to Use
    cp .env.example .env
 2) Set values:
    WEB_HOST=127.0.0.1
-   WEB_PORT=8000
+   WEB_PORT=1733
 3) Start dev:
    ./start-dev.sh
 

@@ -73,7 +73,7 @@ The application will automatically load variables from `.env`!
 | `CONTEXT_PATH` | Data storage path | `.` (current directory) |
 | `CONTEXT_API_KEY` | API authentication key | `test` |
 | `WEB_HOST` | Backend web server host | `127.0.0.1` |
-| `WEB_PORT` | Backend web server port | `8000` |
+| `WEB_PORT` | Backend web server port | `1733` |
 
 ## Configuration Examples
 
@@ -93,7 +93,7 @@ EMBEDDING_API_KEY=
 
 # Backend web server (frontend will consume this too)
 WEB_HOST=127.0.0.1
-WEB_PORT=8000
+WEB_PORT=1733
 ```
 
 **Setup:**
